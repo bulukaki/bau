@@ -35,14 +35,14 @@
         <div class="row">
           <label class="small muted">Digit:&nbsp;</label>
           <select id="digitCount" style="width:90px">
-            <option value="2">2 Digit</option>
-            <option value="3" selected>3 Digit</option>
-            <option value="4">4 Digit</option>
+            <option value="2">2D</option>
+            <option value="3" selected>3D</option>
+            <option value="4">4D</option>
           </select>
         </div>
 
         <div class="row">
-          <label class="small muted">Delimiter:&nbsp;</label>
+          <label class="small muted">Pemisah:&nbsp;</label>
           <input id="delimiter" value="*" style="width:90px" />
         </div>
 
@@ -71,7 +71,7 @@
 
         <div>
           <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:6px">
-            <div class="small">Hasiil 2</div>
+            <div class="small">Hasil 2</div>
             <div class="row">
               <button id="copy2">Salin Hasil 2</button>
             </div>
@@ -80,7 +80,7 @@
         </div>
       </div>
 
-      <footer>Tip: Jangan barbar.</footer>
+      <footer>pro tips: Jangan barbar.</footer>
     </div>
   </div>
 
@@ -101,6 +101,30 @@
       t._timeout=setTimeout(()=>t.classList.remove('show'),2000);
     }
 
+    function saveState(){
+      const state = {
+        digitCount: el('digitCount').value,
+        delimiter: el('delimiter').value,
+        orderType: el('orderType').value,
+        out1: out1.value,
+        out2: out2.value
+      };
+      localStorage.setItem('safetybetState', JSON.stringify(state));
+    }
+
+    function loadState(){
+      const data = localStorage.getItem('safetybetState');
+      if(!data) return;
+      try{
+        const s = JSON.parse(data);
+        el('digitCount').value = s.digitCount || '3';
+        el('delimiter').value = s.delimiter || '*';
+        el('orderType').value = s.orderType || 'shuffle';
+        out1.value = s.out1 || '';
+        out2.value = s.out2 || '';
+      }catch(e){}
+    }
+
     function generate(){
       const digits=parseInt(el('digitCount').value,10);
       const max=Math.pow(10,digits);
@@ -119,6 +143,7 @@
       out2.value=g2.join(delim);
 
       window._gen={g1,g2,delim};
+      saveState();
     }
 
     function copyGroup(groupIndex){
@@ -130,11 +155,16 @@
       }).catch(()=>showToast('Gagal menyalin.'));
     }
 
-    el('generateBtn').addEventListener('click',generate);
+    el('generateBtn').addEventListener('click',()=>{generate();saveState();});
     el('copy1').addEventListener('click',()=>copyGroup(1));
     el('copy2').addEventListener('click',()=>copyGroup(2));
 
-    generate();
+    ['digitCount','delimiter','orderType'].forEach(id=>{
+      el(id).addEventListener('change',saveState);
+      el(id).addEventListener('input',saveState);
+    });
+
+    loadState();
   </script>
 </body>
 </html>
